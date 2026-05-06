@@ -7,7 +7,7 @@ Run with:  streamlit run app.py
 import streamlit as st
 from src.book_search import search_books, format_for_display
 from src.ai_assistant import ask_question
-from src.storage import load_shelf, save_book, is_on_shelf
+from src.storage import load_shelf, save_book, is_on_shelf, save_current_book, load_current_book
 
 # ── Page config ────────────────────────────────────────────────────────────────
 st.set_page_config(
@@ -72,8 +72,18 @@ def render_rocks(rating: float) -> str:
 
 
 # ── Session state defaults ──────────────────────────────────────────────────────
+# On first load, restore the user's last book and progress from disk.
 if "selected_book" not in st.session_state:
-    st.session_state.selected_book = None
+    saved = load_current_book()
+    st.session_state.selected_book = saved["book"] if saved else None
+    st.session_state.progress_mode = saved["progress_mode"] if saved else "Page number"
+    st.session_state.progress_value = saved["progress_value"] if saved else 1
+else:
+    if "progress_mode" not in st.session_state:
+        st.session_state.progress_mode = "Page number"
+    if "progress_value" not in st.session_state:
+        st.session_state.progress_value = 1
+
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 if "progress_str" not in st.session_state:
@@ -127,6 +137,9 @@ with st.sidebar:
                 st.session_state.selected_book = results[choice_index]
                 st.session_state.chat_history = []
                 st.session_state.show_log_form = False
+                st.session_state.progress_mode = "Page number"
+                st.session_state.progress_value = 1
+                save_current_book(results[choice_index], "Page number", 1)
                 st.success(f"Set to **{results[choice_index]['title']}**")
 
     # ── Progress ────────────────────────────────────────────────────────────────
@@ -138,21 +151,29 @@ with st.sidebar:
         progress_mode = st.radio(
             "Track by",
             ["Page number", "Chapter number", "Percentage"],
+            index=["Page number", "Chapter number", "Percentage"].index(st.session_state.progress_mode),
         )
 
         if progress_mode == "Page number":
             total = book.get("pages") or 500
-            page = st.slider("Current page", min_value=1, max_value=total, value=1)
+            default_page = st.session_state.progress_value if st.session_state.progress_mode == "Page number" else 1
+            page = st.slider("Current page", min_value=1, max_value=total, value=min(default_page, total))
             st.session_state.progress_str = f"page {page} of {total}"
+            save_current_book(book, "Page number", page)
 
         elif progress_mode == "Chapter number":
-            chapter = st.number_input("Current chapter", min_value=1, step=1, value=1)
+            default_ch = st.session_state.progress_value if st.session_state.progress_mode == "Chapter number" else 1
+            chapter = st.number_input("Current chapter", min_value=1, step=1, value=default_ch)
             st.session_state.progress_str = f"chapter {chapter}"
+            save_current_book(book, "Chapter number", chapter)
 
         else:
-            pct = st.slider("Percentage read", min_value=0, max_value=100, value=0)
+            default_pct = st.session_state.progress_value if st.session_state.progress_mode == "Percentage" else 0
+            pct = st.slider("Percentage read", min_value=0, max_value=100, value=default_pct)
             st.session_state.progress_str = f"{pct}% through the book"
+            save_current_book(book, "Percentage", pct)
 
+        st.session_state.progress_mode = progress_mode
         st.caption(f"Progress locked at: **{st.session_state.progress_str}**")
 
         # ── Finished this book? ─────────────────────────────────────────────────
