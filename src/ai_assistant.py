@@ -5,6 +5,7 @@ to ensure answers never reveal content beyond the reader's current position.
 """
 
 import os
+from typing import List, Optional
 from dotenv import load_dotenv
 import anthropic
 
@@ -37,7 +38,7 @@ def ask_question(
     title: str,
     author: str,
     progress: str,
-    conversation_history: list[dict] | None = None,
+    conversation_history: Optional[List[dict]] = None,
 ) -> str:
     """
     Send the reader's question to Claude and return the answer.

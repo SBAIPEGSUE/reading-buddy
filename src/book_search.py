@@ -5,11 +5,12 @@ No API key required.
 """
 
 import requests
+from typing import List
 
 SEARCH_URL = "https://openlibrary.org/search.json"
 
 
-def search_books(query: str, max_results: int = 8) -> list[dict]:
+def search_books(query: str, max_results: int = 8) -> List[dict]:
     """
     Search Open Library for books matching `query`.
 
