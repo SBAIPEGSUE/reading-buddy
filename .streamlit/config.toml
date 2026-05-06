@@ -1,0 +1,6 @@
+[theme]
+primaryColor        = "#C4813A"   # warm amber — buttons, links, highlights
+backgroundColor     = "#FDF6E3"   # cream — main background
+secondaryBackgroundColor = "#F0E0C0"  # warm sand — sidebar and input fields
+textColor           = "#3D2B1F"   # dark brown — all body text
+font                = "serif"     # serif font feels more literary
