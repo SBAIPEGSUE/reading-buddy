@@ -1,6 +1,9 @@
 # Secrets — never commit these
 .env
 
+# Personal reading data
+data/
+
 # Python bytecode (compiled files Python creates automatically, not needed in git)
 __pycache__/
 *.pyc
