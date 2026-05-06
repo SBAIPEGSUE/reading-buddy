@@ -1,0 +1,19 @@
+# Secrets — never commit these
+.env
+
+# Python bytecode (compiled files Python creates automatically, not needed in git)
+__pycache__/
+*.pyc
+*.pyo
+
+# Virtual environment (local dependency folder — each developer has their own)
+.venv/
+venv/
+env/
+
+# macOS system files
+.DS_Store
+
+# Editor metadata
+.vscode/
+.idea/
